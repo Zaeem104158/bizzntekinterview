@@ -87,125 +87,128 @@ class ProductCategoryScreen extends GetView<ProductCategoryController> {
               return Text(controller.productStatus.value.errorMessage!);
             } else {
               return Expanded(
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(4),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // 2 items per row
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 0.7,
-                  ),
-                  itemCount: controller.filteredProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = controller.filteredProducts[index];
+                child: RefreshIndicator(
+                  onRefresh: () => controller.fetchProduct(),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.all(4),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, // 2 items per row
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.7,
+                    ),
+                    itemCount: controller.filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = controller.filteredProducts[index];
 
-                    final id = product['id'];
-                    final stock = product['rating']['count'];
-                    return GestureDetector(
-                      onTap: () => Get.to(
-                        () => ProductDetailsWidget(product: product),
-                      ),
-                      child: Card(
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      final id = product['id'];
+                      final stock = product['rating']['count'];
+                      return GestureDetector(
+                        onTap: () => Get.to(
+                          () => ProductDetailsWidget(product: product),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(12)),
-                                child: Hero(
-                                  tag: 'productImage_${product['id']}',
-                                  child: Image.network(
-                                    product['image'],
-                                    fit: BoxFit.fill,
+                        child: Card(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(12)),
+                                  child: Hero(
+                                    tag: 'productImage_${product['id']}',
+                                    child: Image.network(
+                                      product['image'],
+                                      fit: BoxFit.fill,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                product['title'],
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  product['title'],
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                               ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 4.0),
-                              child: Text("\$${product['price']}"),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 4),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.star,
-                                      size: 16, color: Colors.amber),
-                                  SizedBox(width: 4),
-                                  Text("${product['rating']['rate']}"),
-                                ],
-                              ),
-                            ),
-                            Obx(() {
-                              final inCart = controller.cartItems[id] ?? 0;
-                              final isOutOfStock = stock == 0;
-
-                              return Padding(
+                              Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 4.0),
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: Text("\$${product['price']}"),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0, vertical: 4),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      "Stock: $stock",
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                    Row(
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.remove_circle_outline,
-                                            size: 14,
-                                          ),
-                                          onPressed: inCart > 0
-                                              ? () => controller
-                                                  .decrementProduct(product)
-                                              : null,
-                                        ),
-                                        Text(
-                                          "$inCart",
-                                          style: TextStyle(fontSize: 12),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.add_circle_outline,
-                                            size: 14,
-                                          ),
-                                          onPressed:
-                                              !isOutOfStock && inCart < stock
-                                                  ? () => controller
-                                                      .incrementProduct(product)
-                                                  : null,
-                                        ),
-                                      ],
-                                    )
+                                    Icon(Icons.star,
+                                        size: 16, color: Colors.amber),
+                                    SizedBox(width: 4),
+                                    Text("${product['rating']['rate']}"),
                                   ],
                                 ),
-                              );
-                            }),
-                          ],
+                              ),
+                              Obx(() {
+                                final inCart = controller.cartItems[id] ?? 0;
+                                final isOutOfStock = stock == 0;
+
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Stock: $stock",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.remove_circle_outline,
+                                              size: 14,
+                                            ),
+                                            onPressed: inCart > 0
+                                                ? () => controller
+                                                    .decrementProduct(product)
+                                                : null,
+                                          ),
+                                          Text(
+                                            "$inCart",
+                                            style: TextStyle(fontSize: 12),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.add_circle_outline,
+                                              size: 14,
+                                            ),
+                                            onPressed: !isOutOfStock &&
+                                                    inCart < stock
+                                                ? () => controller
+                                                    .incrementProduct(product)
+                                                : null,
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               );
             }
